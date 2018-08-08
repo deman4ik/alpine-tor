@@ -86,12 +86,21 @@ module Service
     attr_reader :new_circuit_period
     attr_reader :max_circuit_dirtiness
     attr_reader :circuit_build_timeout
-
+    attr_reader :exit_nodes
+    attr_reader :strict_nodes
+    
     def initialize(port)
       @port = port
-      @new_circuit_period = ENV['new_circuit_period'] || 120
+      @new_circuit_period = ENV['new_circuit_period'] || 10
       @max_circuit_dirtiness = ENV['max_circuit_dirtiness'] || 600
-      @circuit_build_timeout = ENV['circuit_build_timeout'] || 60
+      @circuit_build_timeout = ENV['circuit_build_timeout'] || 30
+      if ENV['country'].nil?
+        @exit_nodes = "";
+        @strict_nodes = "";
+      else
+        @exit_nodes = "--ExitNodes {#{ENV["country"]}}";
+        @strict_nodes = "--StrictNodes 1";
+      end  
     end
 
     def data_directory
@@ -105,6 +114,8 @@ module Service
                                  "--NewCircuitPeriod #{new_circuit_period}",
                                  "--MaxCircuitDirtiness #{max_circuit_dirtiness}",
                                  "--CircuitBuildTimeout #{circuit_build_timeout}",
+                                 exit_nodes,
+                                 strict_nodes,
                                  "--DataDirectory #{data_directory}",
                                  "--PidFile #{pid_file}",
                                  "--Log \"warn syslog\"",
